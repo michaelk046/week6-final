@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
-from main import database  # ← Fixes the 'database' squiggle
+from database import database
 from schemas import UserOut
 import tables
 

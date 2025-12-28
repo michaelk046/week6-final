@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from databases import Database
 from typing import List
+from database import Database
 import tables  # your tables.py file
 from schemas import UserCreate, UserOut, PostCreate, PostInDB
 from auth import (
@@ -10,17 +10,11 @@ from auth import (
     create_access_token,
     get_password_hash
 )
-
 app = FastAPI(title="LEGO Flip Tracker API")
-
-DATABASE_URL = "postgresql://user:password@host:port/dbname"  # REPLACE THIS!
-database = Database(DATABASE_URL)
-
 
 @app.on_event("startup")
 async def startup():
     await database.connect()
-
 
 @app.on_event("shutdown")
 async def shutdown():

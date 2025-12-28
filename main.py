@@ -15,6 +15,25 @@ app = FastAPI(title="LEGO Flip Tracker API")
 @app.on_event("startup")
 async def startup():
     await database.connect()
+    # Create tables if they don't exist
+    async with database.transaction():
+        await database.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                hashed_password TEXT NOT NULL
+            )
+        """)
+        await database.execute("""
+            CREATE TABLE IF NOT EXISTS posts (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) NOT NULL,
+                username TEXT NOT NULL,
+                set_number TEXT NOT NULL,
+                buy_price REAL NOT NULL,
+                sell_price REAL
+            )
+        """)
 
 @app.on_event("shutdown")
 async def shutdown():

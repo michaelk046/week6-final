@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
-from database import Database
+from database import database
 import tables  # your tables.py file
 from schemas import UserCreate, UserOut, PostCreate, PostInDB
 from auth import (

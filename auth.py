@@ -12,6 +12,8 @@ SECRET_KEY = "your-super-secret-key-here-change-in-production"  # CHANGE THIS!
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 ph = PasswordHasher()
 
 def get_password_hash(password: str) -> str:

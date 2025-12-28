@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from typing import List
 from database import database
-import tables  # your tables.py file
+import tables
 from schemas import UserCreate, UserOut, PostCreate, PostInDB
 from auth import (
     get_current_user,
@@ -12,10 +13,18 @@ from auth import (
 )
 app = FastAPI(title="LEGO Flip Tracker API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://lego-flip-frontend-clean.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("startup")
 async def startup():
     await database.connect()
-    # Create tables if they don't exist
+
     async with database.transaction():
         await database.execute("""
             CREATE TABLE IF NOT EXISTS users (
@@ -42,7 +51,6 @@ async def shutdown():
 @app.post("/register", response_model=UserOut)
 async def register(user: UserCreate):
     try:
-        # Check if username already exists
         query = tables.users.select().where(tables.users.c.username == user.username)
         existing = await database.fetch_one(query)
         if existing:
@@ -90,7 +98,6 @@ async def create_post(post: PostCreate, current_user: UserOut = Depends(get_curr
         sell_price=post.sell_price
     )
 
-
 @app.get("/posts", response_model=List[PostInDB])
 async def get_all_posts():
     query = tables.posts.select().order_by(tables.posts.c.id.desc())
@@ -106,7 +113,6 @@ async def get_all_posts():
         )
         for r in results
     ]
-
 
 @app.get("/my-posts", response_model=List[PostInDB])
 async def get_my_posts(current_user: UserOut = Depends(get_current_user)):
@@ -128,7 +134,6 @@ async def get_my_posts(current_user: UserOut = Depends(get_current_user)):
         for r in results
     ]
 
-
 @app.delete("/posts/{post_id}")
 async def delete_post(post_id: int, current_user: UserOut = Depends(get_current_user)):
     query = tables.posts.select().where(tables.posts.c.id == post_id)
@@ -143,7 +148,6 @@ async def delete_post(post_id: int, current_user: UserOut = Depends(get_current_
     await database.execute(delete_query)
 
     return {"detail": "Flip deleted successfully"}
-
 
 @app.get("/")
 async def root():

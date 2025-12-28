@@ -22,19 +22,22 @@ async def shutdown():
 
 @app.post("/register", response_model=UserOut)
 async def register(user: UserCreate):
-    # Check if username already exists
-    query = tables.users.select().where(tables.users.c.username == user.username)
-    existing = await database.fetch_one(query)
-    if existing:
-        raise HTTPException(status_code=400, detail="Username already taken")
+    try:
+        # Check if username already exists
+        query = tables.users.select().where(tables.users.c.username == user.username)
+        existing = await database.fetch_one(query)
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already taken")
 
-    hashed_password = get_password_hash(user.password)
-    query = tables.users.insert().values(
-        username=user.username,
-        hashed_password=hashed_password
-    )
-    record_id = await database.execute(query)
-    return UserOut(id=record_id, username=user.username)
+        hashed_password = get_password_hash(user.password)
+        query = tables.users.insert().values(
+            username=user.username,
+            hashed_password=hashed_password
+        )
+        record_id = await database.execute(query)
+        return UserOut(id=record_id, username=user.username)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 
 @app.post("/login")

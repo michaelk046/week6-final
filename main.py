@@ -102,17 +102,7 @@ async def create_post(post: PostCreate, current_user: UserOut = Depends(get_curr
 async def get_all_posts():
     query = tables.posts.select().order_by(tables.posts.c.id.desc())
     results = await database.fetch_all(query)
-    return [
-        PostInDB(
-            id=r["id"],
-            user_id=r["user_id"],
-            username=r["username"],
-            set_number=r["set_number"],
-            buy_price=r["buy_price"],
-            sell_price=r["sell_price"]
-        )
-        for r in results
-    ]
+    return [PostInDB.from_orm(r) for r in results]  # or PostInDB(**dict(r))
 
 @app.get("/my-posts", response_model=List[PostInDB])
 async def get_my_posts(current_user: UserOut = Depends(get_current_user)):
@@ -122,17 +112,7 @@ async def get_my_posts(current_user: UserOut = Depends(get_current_user)):
         .order_by(tables.posts.c.id.desc())
     )
     results = await database.fetch_all(query)
-    return [
-        PostInDB(
-            id=r["id"],
-            user_id=r["user_id"],
-            username=r["username"],
-            set_number=r["set_number"],
-            buy_price=r["buy_price"],
-            sell_price=r["sell_price"]
-        )
-        for r in results
-    ]
+    return [PostInDB.from_orm(r) for r in results]
 
 @app.delete("/posts/{post_id}")
 async def delete_post(post_id: int, current_user: UserOut = Depends(get_current_user)):
